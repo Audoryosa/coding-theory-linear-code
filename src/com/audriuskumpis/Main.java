@@ -7,6 +7,7 @@ import java.awt.image.Raster;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,7 +79,7 @@ public class Main {
                 break;
 
             case 3:
-                initImageOption(rows, columns, faultProbability, gMatrix, anotherMatrix);
+                initImageOption(rows, faultProbability, gMatrix, anotherMatrix);
                 break;
 
             default:
@@ -94,7 +95,7 @@ public class Main {
     }
 
     // Neveikia su paveiksleliu.
-    private static void initImageOption(int rows, int columns, double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {
+    private static void initImageOption(int rows, double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {
         Channel channel = new Channel(faultProbability);
         Encoder encoder = new Encoder(gMatrix);
         Decoder decoder = new Decoder(CodingUtils.buildHMatrix(anotherMatrix));
@@ -112,17 +113,22 @@ public class Main {
         {
             e.printStackTrace();
         }
-        byte[] jpgByteArray = byteArrayOutputStream.toByteArray();
-        StringBuilder imageBinaryString = new StringBuilder();
-        for (byte by : jpgByteArray) {
-            imageBinaryString.append(Integer.toBinaryString(by & 0xFF));
+        StringBuilder imageBinaryString = null;
+        try {
+            byte[] jpgByteArray = Files.readAllBytes(new File(enteredText).toPath());
+            imageBinaryString = new StringBuilder();
+            for (byte by : jpgByteArray) {
+                imageBinaryString.append(Integer.toBinaryString(by & 0xFF));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         // paveikslelio visi bitai
         String imageBinary = imageBinaryString.toString();
 
-        String untouchableBytes = imageBinary.substring(0, 500);
-        imageBinary = imageBinary.substring(500);
+        String untouchableBytes = imageBinary.substring(0, 1000);
+        imageBinary = imageBinary.substring(1000);
         byte[] imageBinArray = CodingUtils.stringToArray(imageBinary);
 
         List<byte[]> splitted = new ArrayList<>();
@@ -146,7 +152,7 @@ public class Main {
             byte[] encoded = encoder.encode(codeChunk);
             channel.distortMessage(encoded);
             distortedImage.append(CodingUtils.arrayToString(encoded), 0, rows);
-            byte[] decoded = decoder.decodeMessage(encoded, codeChunk.length);
+            byte[] decoded = decoder.decodeMessage(encoded, rows);
             stringBuilder.append(CodingUtils.get1DMatrixAsString(decoded));
         }
 
@@ -160,7 +166,12 @@ public class Main {
             e.printStackTrace();
         }
 
-        System.out.println("done");
+        int l = imageBinary.length();
+        int g =      result.length();
+
+        int errors = CodingUtils.compareTwoBinaryResults(imageBinary, result);
+        System.out.println("Nesutampantys bitai po dekodavimo: " + errors + ", is viso bitu: " + imageBinary.length());
+        System.out.println("Klaidu procentas: " + (errors * 100) / imageBinary.length() + "%");
     }
 
     // uzkoduojams ivestas tekstas, prasiunciamas pro kanala su klaidos tikimybe 0-1, ir dekoduojamas.
@@ -218,6 +229,10 @@ public class Main {
 
         System.out.println("Dekoduotas tekstas: ");
         System.out.println(output);
+
+        int errors = CodingUtils.compareTwoTextResults(enteredText, output);
+        System.out.println("Nesutampantys bitai po dekodavimo: " + errors + ", is viso bitu: " + enteredText.length());
+        System.out.println("Klaidu procentas: " + (errors * 100) / enteredText.length() + "%");
     }
 
 
@@ -233,6 +248,7 @@ public class Main {
 
         System.out.println("Ivestas pranesimas: ");
         MatrixCalculationUtils.print1dMatrix(message);
+        String originalMessage = CodingUtils.arrayToString(message);
 
         Encoder encoder = new Encoder(gMatrix);
         Channel channel = new Channel(faultProbability);
@@ -266,6 +282,10 @@ public class Main {
         byte[] decoded = decoder.decodeMessage(encodedMessage, rows);
         System.out.println("Dekoduotas pranesimas: ");
         MatrixCalculationUtils.print1dMatrix(decoded);
+
+        int errors = CodingUtils.compareTwoTextResults(originalMessage, CodingUtils.arrayToString(decoded));
+        System.out.println("Nesutampantys bitai po dekodavimo: " + errors + ", is viso bitu: " + originalMessage.length());
+        System.out.println("Klaidu procentas: " + (errors * 100) / originalMessage.length() + "%");
     }
 
 }

@@ -140,4 +140,26 @@ public class CodingUtils {
         return binaryResult;
 
     }
+
+    public static int compareTwoBinaryResults(String imageBinary, String result) {
+        int errors = 0;
+        for (int i = 0; i < imageBinary.length(); i++) {
+            int original = Character.getNumericValue(imageBinary.charAt(i));
+            int decoded = Character.getNumericValue(result.charAt(i));
+            if (original != decoded) {
+                errors++;
+            }
+        }
+        return errors;
+    }
+
+    public static int compareTwoTextResults(String enteredText, String output) {
+        int errors = 0;
+        for (int i = 0; i < enteredText.length(); i++) {
+            if (enteredText.charAt(i) != output.charAt(i)) {
+                errors++;
+            }
+        }
+        return errors;
+    }
 }
