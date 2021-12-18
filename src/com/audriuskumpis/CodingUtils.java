@@ -3,19 +3,37 @@ package com.audriuskumpis;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pagalbine klase
+ */
 public class CodingUtils {
 
+    /**
+     * Sukuria generuojancia matrica is duotos kitos matricos. Rezultatas - matrica, pavidalu (I | A)
+     * @param someMatrix A matrica
+     * @return grazina generuojancia matrica
+     */
     public static byte[][] buildGMatrix(byte[][] someMatrix) {
         byte[][] identity = MatrixCalculationUtils.generateSizeNIdentityMatrix(someMatrix.length);
         return MatrixCalculationUtils.appendMatrixTo(identity, someMatrix);
     }
 
+    /**
+     * Sukuria kontroline matrica, skirta dekodavimui, kurios pavidalas yra (At | I)
+     * @param someMatrix
+     * @return
+     */
     public static byte[][] buildHMatrix(byte[][] someMatrix) {
         byte[][] randomTransposed = MatrixCalculationUtils.transposeMatrix(someMatrix);
         byte[][] id = MatrixCalculationUtils.generateSizeNIdentityMatrix(randomTransposed.length);
         return MatrixCalculationUtils.appendMatrixTo(randomTransposed, id);
     }
 
+    /**
+     * Sukuria visas imanomas n ilgio bitu sekas.
+     * @param n norimo ilgio sekos iligs.
+     * @return
+     */
     public static List<byte[]> generateAllPossibleLengthNBinaries(int n) {
         List<byte[]> result = new ArrayList<>();
         int totalRows = (int) Math.pow(2, n);
@@ -32,6 +50,12 @@ public class CodingUtils {
         return result;
     }
 
+    /**
+     * Uzpildo trukstamas bito reiksmes nuliais 11 --> 000011
+     * @param variation
+     * @param n
+     * @return
+     */
     public static String fillInMissingZeros(String variation, int n) {
         int variationLength = variation.length();
         StringBuilder missingZeros = new StringBuilder();
@@ -44,6 +68,11 @@ public class CodingUtils {
         return missingZeros + variation;
     }
 
+    /**
+     * 1d matrica --> String pavidalu
+     * @param array
+     * @return
+     */
     public static String get1DMatrixAsString(byte[] array) {
         StringBuilder sb = new StringBuilder();
         for (int num : array) {
@@ -52,6 +81,11 @@ public class CodingUtils {
         return sb.toString();
     }
 
+    /**
+     * Randa, kiek duotame vektoriuje yra vienetu.
+     * @param matrix
+     * @return
+     */
     public static int getMatrixWeight(byte[] matrix) {
         int weight = 0;
         for (int num : matrix) {
@@ -62,6 +96,11 @@ public class CodingUtils {
         return weight;
     }
 
+    /**
+     * String --> vektorius
+     * @param array
+     * @return
+     */
     public static byte[] stringToArray(String array) {
         byte[] result = new byte[array.length()];
         String[] splitted = array.split("");
@@ -79,6 +118,11 @@ public class CodingUtils {
         return sb.toString();
     }
 
+    /**
+     * Pavercia ivesta teksta i dvejetaini pavidala
+     * @param input
+     * @return
+     */
     public static byte[] convertStringToBinary(String input) {
         StringBuilder result = new StringBuilder();
         char[] chars = input.toCharArray();

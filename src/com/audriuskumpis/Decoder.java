@@ -5,6 +5,9 @@ import java.util.stream.Collectors;
 
 import static com.audriuskumpis.CodingUtils.generateAllPossibleLengthNBinaries;
 
+/**
+ * Dekodavimui skirta klase.
+ */
 public class Decoder {
 
     private final byte[][] hMatrix;
@@ -24,6 +27,7 @@ public class Decoder {
 
     private byte[] fixErrors(byte[] message) {
         int weight = getWeight(message);
+        // jei kodo sindromo svoris == 0, kodas laikomas istaisytu.
         if (weight == 0) {
             return message;
         }
@@ -32,8 +36,11 @@ public class Decoder {
         int position = 0;
         while (weight != 0) {
             previousWeight = weight;
+            // pakeiciame po viena bita iskraipytame pranesime
             message[position] = (byte) ((message[position] + 1) % 2);
+            // gauname jo sindromo svori
             weight = getWeight(message);
+            // jei kodo svoris padidejo, tai atstatome ji i toki, koks buvo
             if (weight >= previousWeight) {
                 message[position] = (byte) ((message[position] + 1) % 2);
                 weight = previousWeight;
@@ -46,6 +53,12 @@ public class Decoder {
         return message;
     }
 
+    /**
+     * Is istaisyto pranesimo pasiimame pirmus n bitu - uzkoduota pranesima.
+     * @param fixedMessage
+     * @param length
+     * @return
+     */
     private byte[] decode(byte[] fixedMessage, int length) {
         byte[] decoded = new byte[length];
         for (int i = 0; i < decoded.length; i++) {
@@ -54,6 +67,11 @@ public class Decoder {
         return decoded;
     }
 
+    /**
+     * Apskaiciuoja duoto pranesimo svori
+     * @param message
+     * @return
+     */
     private int getWeight(byte[] message) {
         byte[][] transposedMessage = MatrixCalculationUtils.transpose1DMatrix(message);
         byte[][] messageSyndrome = MatrixCalculationUtils.multiplyMatrices(hMatrix, transposedMessage);
@@ -62,6 +80,10 @@ public class Decoder {
         return syndromeWeightMap.get(syndrome);
     }
 
+    /**
+     * Sukuria poaibiu lyderiu map'a, kuris naudojamas taisant pranesimo klaidas.
+     * @param hMatrix
+     */
     private void buildCosetLeaderMap(byte[][] hMatrix) {
         cosetLeaderMap = new TreeMap<>();
         cosetWeightMap = new HashMap<>();

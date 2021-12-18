@@ -33,6 +33,7 @@ public class Main {
         System.out.println("Ar patys ivesite generuojancia matrica? (t/n)");
         String answerGeneratingMatrix = scanner.next();
 
+        // sugeneruojame G matrica pagal vartotojo ivestus parametrus.
         byte[][] gMatrix = new byte[rows][columns];
         byte[][] anotherMatrix = new byte[rows][columns - rows];
         if (answerGeneratingMatrix.equalsIgnoreCase("n")) {
@@ -73,7 +74,7 @@ public class Main {
                 break;
 
             case 2:
-                initTextOption(rows, columns, faultProbability, gMatrix, anotherMatrix);
+                initTextOption(rows, faultProbability, gMatrix, anotherMatrix);
                 break;
 
             case 3:
@@ -86,12 +87,13 @@ public class Main {
 
     }
 
-    public static boolean arrayToBMP(byte[] pixelData, int width, int height, File outputFile) throws IOException {
+    private static boolean arrayToBMP(byte[] pixelData, int width, int height, File outputFile) throws IOException {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         img.setData(Raster.createRaster(img.getSampleModel(), new DataBufferByte(pixelData, pixelData.length), null));
         return javax.imageio.ImageIO.write(img, "bmp", outputFile);
     }
 
+    // Neveikia su paveiksleliu.
     private static void initImageOption(int rows, int columns, double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {
         Channel channel = new Channel(faultProbability);
         Encoder encoder = new Encoder(gMatrix);
@@ -115,8 +117,6 @@ public class Main {
         for (byte by : jpgByteArray) {
             imageBinaryString.append(Integer.toBinaryString(by & 0xFF));
         }
-
-// C:/Images/nebula.bmp
 
         // paveikslelio visi bitai
         String imageBinary = imageBinaryString.toString();
@@ -163,7 +163,8 @@ public class Main {
         System.out.println("done");
     }
 
-    private static void initTextOption(int rows, int columns, double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {
+    // uzkoduojams ivestas tekstas, prasiunciamas pro kanala su klaidos tikimybe 0-1, ir dekoduojamas.
+    private static void initTextOption(int rows,double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {
         Channel channel = new Channel(faultProbability);
         Encoder encoder = new Encoder(gMatrix);
         Decoder decoder = new Decoder(CodingUtils.buildHMatrix(anotherMatrix));
@@ -175,6 +176,7 @@ public class Main {
 
         List<byte[]> splitted = new ArrayList<>();
 
+        // kadangi bitu yra daug, susiskaidome ji patogesniais gabalais.
         for (int i = 0; i < binaryText.length; i += rows) {
             splitted.add(Arrays.copyOfRange(binaryText, i, Math.min(binaryText.length, i + rows)));
         }
@@ -188,19 +190,20 @@ public class Main {
             }
         }
 
-        StringBuilder distrotedBuilder = new StringBuilder();
+        // su kiekvienu gabalu atliekame visa procedura
+        StringBuilder distortedBuilder = new StringBuilder();
         StringBuilder stringBuilder = new StringBuilder();
         for (byte[] codeChunk : splitted) {
             byte[] encoded = encoder.encode(codeChunk);
             channel.distortMessage(encoded);
-            distrotedBuilder.append(CodingUtils.arrayToString(encoded), 0, rows);
+            distortedBuilder.append(CodingUtils.arrayToString(encoded), 0, rows);
             byte[] decoded = decoder.decodeMessage(encoded, codeChunk.length);
             stringBuilder.append(CodingUtils.get1DMatrixAsString(decoded));
         }
 
         StringBuilder distortedResult = new StringBuilder();
         Arrays.stream(
-                distrotedBuilder.toString().split("(?<=\\G.{8})"))
+                distortedBuilder.toString().split("(?<=\\G.{8})"))
                 .forEach(s -> distortedResult.append((char) Integer.parseInt(s, 2)));
 
         System.out.println("Iskraipytas tekstas:");
@@ -217,6 +220,8 @@ public class Main {
         System.out.println(output);
     }
 
+
+    // uzkoduoja, prasiuncia pro kanal ir dekoduoja ivesta dvejetaini pranesima, pvz "1101"
     private static void initBinaryCodeOption(int rows, int columns, double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Iveskite " + rows + " ilgio koda: ");
