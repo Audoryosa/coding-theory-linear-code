@@ -20,11 +20,22 @@ public class Decoder {
         buildCosetLeaderMap(hMatrix);
     }
 
+    /**
+     * Dekoduoja gauta pranesima. Pirma istaiso galimas klaidas, tada paima pirmus x skaitmenis, kurie ir yra norimas pranesimas
+     * @param message pranesimas, kuri noriuma dekoduoti
+     * @param expectedMessageLength rezultato ilgis
+     * @return grazina dekoduota pranesima
+     */
     public byte[] decodeMessage(byte[] message, int expectedMessageLength) {
         byte[] fixedMessage = fixErrors(message);
         return decode(fixedMessage, expectedMessageLength);
     }
 
+    /**
+     * Istaiso klaidas gautuame pranesime
+     * @param message Pranesimas, kuri norima istaisyti
+     * @return grazina istaisyta pranesima
+     */
     private byte[] fixErrors(byte[] message) {
         int weight = getWeight(message);
         // jei kodo sindromo svoris == 0, kodas laikomas istaisytu.
@@ -55,9 +66,9 @@ public class Decoder {
 
     /**
      * Is istaisyto pranesimo pasiimame pirmus n bitu - uzkoduota pranesima.
-     * @param fixedMessage
-     * @param length
-     * @return
+     * @param fixedMessage pranesimas, kuri norima istaisyti
+     * @param length dekoduoto pranesimo ilgis
+     * @return grazina dekoduota pranesima
      */
     private byte[] decode(byte[] fixedMessage, int length) {
         byte[] decoded = new byte[length];
@@ -69,8 +80,8 @@ public class Decoder {
 
     /**
      * Apskaiciuoja duoto pranesimo svori
-     * @param message
-     * @return
+     * @param message pranesimas, kurio svorio ieskoma
+     * @return grazina pranesimo svori nuo 0 iki x
      */
     private int getWeight(byte[] message) {
         byte[][] transposedMessage = MatrixCalculationUtils.transpose1DMatrix(message);
@@ -82,7 +93,7 @@ public class Decoder {
 
     /**
      * Sukuria poaibiu lyderiu map'a, kuris naudojamas taisant pranesimo klaidas.
-     * @param hMatrix
+     * @param hMatrix paduodama kontroline matrica, kurios pagalba apskaiciuojami poaibiu lyderiai
      */
     private void buildCosetLeaderMap(byte[][] hMatrix) {
         cosetLeaderMap = new TreeMap<>();

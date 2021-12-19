@@ -7,9 +7,9 @@ public class MatrixCalculationUtils {
 
     /**
      * Sugeneruoja dvejetaine matrica, su pseudo atsitiktinem reiksmem
-     * @param k
-     * @param n
-     * @return
+     * @param k eiluciu skaicius
+     * @param n stulpeliu skaicius
+     * @return grazina matrica su atsitiktinem reiksmem nuo 0 iki 1
      */
     public static byte[][] generateRandomKxNMatrix(int k, int n) {
         byte[][] randomMatrix = new byte[k][n];
@@ -26,9 +26,9 @@ public class MatrixCalculationUtils {
 
     /**
      * Prilipdo viena matrica prie kitos sono. T.y. jei turim matrica A, ir matrica B, sio metodo rezultatas yra matrica (A | B)
-     * @param baseMatrix
-     * @param matrixToAppend
-     * @return
+     * @param baseMatrix kaire matrica
+     * @param matrixToAppend desine matrica
+     * @return grazina matrica pavidalu (baseMatrix | matrixToAppend)
      */
     public static byte[][] appendMatrixTo(byte[][] baseMatrix, byte[][] matrixToAppend) {
         int baseMatrixRowCount = baseMatrix.length;
@@ -60,8 +60,8 @@ public class MatrixCalculationUtils {
 
     /**
      * Transponuoja matrica A. A -> At
-     * @param matrix
-     * @return
+     * @param matrix transponuojama matrica
+     * @return grazina transponuota matrica At
      */
     public static byte[][] transposeMatrix(byte[][] matrix) {
         int rows = matrix.length;
@@ -80,8 +80,8 @@ public class MatrixCalculationUtils {
 
     /**
      * Transponuoja 1d matrica.
-     * @param matrix
-     * @return
+     * @param matrix matrica is vienos eilutes
+     * @return grazina transponuota matrica
      */
     public static byte[][] transpose1DMatrix(byte[] matrix) {
         int rows = matrix.length;
@@ -97,8 +97,8 @@ public class MatrixCalculationUtils {
 
     /**
      * Transponuoja 2d matrica i 1d matrica.
-     * @param matrix
-     * @return
+     * @param matrix transponuojama matrica
+     * @return grazina transponuota matrica
      */
     public static byte[] transpose2dTo1dMatrix(byte[][] matrix) {
         int rows = matrix.length;
@@ -111,8 +111,8 @@ public class MatrixCalculationUtils {
 
     /**
      * SUgeneruoja n x n dydzio vienetine matrica.
-     * @param size
-     * @return
+     * @param size norimas vienetines matricos dydis
+     * @return grazina n x n vienetine matrica
      */
     public static byte[][] generateSizeNIdentityMatrix(int size) {
         byte[][] identityMatrix = new byte[size][size];
@@ -128,7 +128,7 @@ public class MatrixCalculationUtils {
 
     /**
      * Atspausdina 2d matricos turini
-     * @param matrix
+     * @param matrix matrica, kuria norima atvaizduoti
      */
     public static void print2dMatrix(byte[][] matrix) {
         for (byte[] row : matrix) {
@@ -141,9 +141,9 @@ public class MatrixCalculationUtils {
 
     /**
      * Sudaugina 2 matricas.
-     * @param matrixA
-     * @param matrixB
-     * @return
+     * @param matrixA pirma matrica
+     * @param matrixB antra matrica
+     * @return grazina nauja matrica AB
      */
     public static byte[][] multiplyMatrices(byte[][] matrixA, byte[][] matrixB) {
         int aRow = matrixA.length;
@@ -170,9 +170,9 @@ public class MatrixCalculationUtils {
 
     /**
      * Sudaugina vektoriu ir matrica.
-     * @param vector
-     * @param gMatrix
-     * @return
+     * @param vector Dauginamas vektorius
+     * @param gMatrix Dauginama matrica
+     * @return nauja matrica AB
      */
     public static byte[] multiplyVectorByMatrixG(byte[] vector, byte[][] gMatrix) {
         if (vector.length != gMatrix.length) {
@@ -190,7 +190,7 @@ public class MatrixCalculationUtils {
 
     /**
      * Atvaizduoja 1d matricos turini.
-     * @param array
+     * @param array matrica, kuria norima atvaizduoti
      */
     public static void print1dMatrix(byte[] array) {
         for (int i : array) {
@@ -202,8 +202,8 @@ public class MatrixCalculationUtils {
     /**
      * Istraukiama "bet kokia" matrica is generuojancios matricos.
      * Generuojanti matrica yra pavidalo (I | A). Metodas grazina matrica A.
-     * @param gMatrix
-     * @return
+     * @param gMatrix generuojanti matrica, kurioje yra kita matrica A
+     * @return grazina matrica A
      */
     public static byte[][] generateAnotherMatrixFromGMatrix(byte[][] gMatrix) {
         int rows = gMatrix.length;

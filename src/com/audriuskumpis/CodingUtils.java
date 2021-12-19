@@ -21,7 +21,7 @@ public class CodingUtils {
     /**
      * Sukuria kontroline matrica, skirta dekodavimui, kurios pavidalas yra (At | I)
      * @param someMatrix
-     * @return
+     * @return grazina kontroline H matrica
      */
     public static byte[][] buildHMatrix(byte[][] someMatrix) {
         byte[][] randomTransposed = MatrixCalculationUtils.transposeMatrix(someMatrix);
@@ -32,14 +32,14 @@ public class CodingUtils {
     /**
      * Sukuria visas imanomas n ilgio bitu sekas.
      * @param n norimo ilgio sekos iligs.
-     * @return
+     * @return grazina visu imanomu n ilgio baitu sarasa
      */
     public static List<byte[]> generateAllPossibleLengthNBinaries(int n) {
         List<byte[]> result = new ArrayList<>();
         int totalRows = (int) Math.pow(2, n);
         for (int i = 0; i < totalRows; i++) {
             String variation = Integer.toBinaryString(i);
-            variation = fillInMissingZeros(variation, n);
+            variation = fillInMissingZeros(variation, n, true);
             byte[] variationArray = new byte[n];
             for (int j = 0; j < variation.length(); j++)
             {
@@ -52,11 +52,11 @@ public class CodingUtils {
 
     /**
      * Uzpildo trukstamas bito reiksmes nuliais 11 --> 000011
-     * @param variation
-     * @param n
-     * @return
+     * @param variation seka, kuriai truksta nuliu
+     * @param n koks turi buti sekos ilgis
+     * @return grazina sutvarkyta seka
      */
-    public static String fillInMissingZeros(String variation, int n) {
+    public static String fillInMissingZeros(String variation, int n, boolean appendToStart) {
         int variationLength = variation.length();
         StringBuilder missingZeros = new StringBuilder();
         if (variationLength < n) {
@@ -65,7 +65,11 @@ public class CodingUtils {
                 missingZeros.append("0");
             }
         }
-        return missingZeros + variation;
+        if (appendToStart) {
+            return missingZeros + variation;
+        } else {
+            return variation + missingZeros;
+        }
     }
 
     /**
@@ -120,8 +124,8 @@ public class CodingUtils {
 
     /**
      * Pavercia ivesta teksta i dvejetaini pavidala
-     * @param input
-     * @return
+     * @param input masyvas String pavidalu
+     * @return grazina masyva is String
      */
     public static byte[] convertStringToBinary(String input) {
         StringBuilder result = new StringBuilder();
@@ -141,11 +145,17 @@ public class CodingUtils {
 
     }
 
-    public static int compareTwoBinaryResults(String imageBinary, String result) {
+    /**
+     * Palygina, kiek yra neatitikimu tarp dvieju seku
+     * @param arrayOne pirmas masyvas
+     * @param arrayTwo antras masyvas
+     * @return grazina neatitikimu skaiciu
+     */
+    public static int compareTwoBinaryResults(String arrayOne, String arrayTwo) {
         int errors = 0;
-        for (int i = 0; i < imageBinary.length(); i++) {
-            int original = Character.getNumericValue(imageBinary.charAt(i));
-            int decoded = Character.getNumericValue(result.charAt(i));
+        for (int i = 0; i < arrayOne.length(); i++) {
+            int original = Character.getNumericValue(arrayOne.charAt(i));
+            int decoded = Character.getNumericValue(arrayTwo.charAt(i));
             if (original != decoded) {
                 errors++;
             }
@@ -153,10 +163,16 @@ public class CodingUtils {
         return errors;
     }
 
-    public static int compareTwoTextResults(String enteredText, String output) {
+    /**
+     * Palygina rezultata tarp dvieju String'u
+     * @param stringOne pirma seka
+     * @param stringTwo antra seka
+     * @return grazina neatitikimu tarp dvieju seku skaiciu
+     */
+    public static int compareTwoTextResults(String stringOne, String stringTwo) {
         int errors = 0;
-        for (int i = 0; i < enteredText.length(); i++) {
-            if (enteredText.charAt(i) != output.charAt(i)) {
+        for (int i = 0; i < stringOne.length(); i++) {
+            if (stringOne.charAt(i) != stringTwo.charAt(i)) {
                 errors++;
             }
         }

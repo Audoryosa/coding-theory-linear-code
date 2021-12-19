@@ -6,6 +6,7 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -88,13 +89,28 @@ public class Main {
 
     }
 
-    private static boolean arrayToBMP(byte[] pixelData, int width, int height, File outputFile) throws IOException {
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        img.setData(Raster.createRaster(img.getSampleModel(), new DataBufferByte(pixelData, pixelData.length), null));
-        return javax.imageio.ImageIO.write(img, "bmp", outputFile);
+    /**
+     * Sukuria .bmp paveiksleli ir iraso ji i diska
+     * @param allDataString Paveikslelio duomenys, baitu masyvas
+     * @param outputFile paveiksliuko pavadinimas
+     * @throws IOException
+     */
+    private static void binaryToBMP(String allDataString, int originalSize, File outputFile) throws IOException {
+        byte[] resultArray = new byte[originalSize];
+        int index = 0;
+        int anotherIndex = 0;
+        for (int i = 0; i < resultArray.length; i++) {
+            int parsed = Integer.parseInt(allDataString.substring(index, index + 8), 2);
+            resultArray[anotherIndex] = (byte) parsed;
+            anotherIndex++;
+            index += 8;
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+            outputStream.write(resultArray);
+        }
     }
 
-    // Neveikia su paveiksleliu.
     private static void initImageOption(int rows, double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {
         Channel channel = new Channel(faultProbability);
         Encoder encoder = new Encoder(gMatrix);
@@ -102,24 +118,17 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Iveskite pilna kelia iki paveikslelio .bpm formatu, pvz (C:/Images/pic.bpm):");
         String enteredText = scanner.nextLine();
-        BufferedImage image = null;
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        try
-        {
-            image = ImageIO.read(new File(enteredText));
-            ImageIO.write(image, "bmp", byteArrayOutputStream);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
         StringBuilder imageBinaryString = null;
+        int originalSize = 0;
         try {
-            byte[] jpgByteArray = Files.readAllBytes(new File(enteredText).toPath());
+            byte[] byteArray = Files.readAllBytes(new File(enteredText).toPath());
+            originalSize = byteArray.length;
             imageBinaryString = new StringBuilder();
-            for (byte by : jpgByteArray) {
-                imageBinaryString.append(Integer.toBinaryString(by & 0xFF));
+            for (byte by : byteArray) {
+                imageBinaryString.append(CodingUtils.fillInMissingZeros(Integer.toBinaryString(by & 0xFF), 8, true));
             }
+            binaryToBMP(imageBinaryString.toString(), originalSize, new File("nuskaitytas.bmp"));
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -127,10 +136,10 @@ public class Main {
         // paveikslelio visi bitai
         String imageBinary = imageBinaryString.toString();
 
-        String untouchableBytes = imageBinary.substring(0, 1000);
-        imageBinary = imageBinary.substring(1000);
-        byte[] imageBinArray = CodingUtils.stringToArray(imageBinary);
+        String untouchableBytes = imageBinary.substring(0, 254 * 8);
+        imageBinary = imageBinary.substring(254 * 8);
 
+        byte[] imageBinArray = CodingUtils.stringToArray(imageBinary);
         List<byte[]> splitted = new ArrayList<>();
 
         for (int i = 0; i < imageBinArray.length; i += rows) {
@@ -141,7 +150,7 @@ public class Main {
             if (splitted.get(i).length != rows) {
                 byte[] arr = splitted.get(i);
                 String arrString = CodingUtils.arrayToString(arr);
-                String fixedArr = CodingUtils.fillInMissingZeros(arrString, rows);
+                String fixedArr = CodingUtils.fillInMissingZeros(arrString, rows, false);
                 splitted.set(i, CodingUtils.stringToArray(fixedArr));
             }
         }
@@ -156,18 +165,15 @@ public class Main {
             stringBuilder.append(CodingUtils.get1DMatrixAsString(decoded));
         }
 
-        String distortedResult = untouchableBytes + distortedImage.toString();
-        String result = untouchableBytes + stringBuilder.toString();
+        String distortedResult = untouchableBytes + distortedImage;
+        String result = untouchableBytes + stringBuilder;
 
         try {
-            arrayToBMP(CodingUtils.stringToArray(result), image.getWidth(), image.getHeight(), new File("sukurtas.bmp"));
-            arrayToBMP(CodingUtils.stringToArray(distortedResult), image.getWidth(), image.getHeight(), new File("iskreiptas.bmp"));
+            binaryToBMP(result, originalSize, new File("dekoduotas.bmp"));
+            binaryToBMP(distortedResult, originalSize, new File("iskreiptas.bmp"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        int l = imageBinary.length();
-        int g =      result.length();
 
         int errors = CodingUtils.compareTwoBinaryResults(imageBinary, result);
         System.out.println("Nesutampantys bitai po dekodavimo: " + errors + ", is viso bitu: " + imageBinary.length());
@@ -196,7 +202,7 @@ public class Main {
             if (splitted.get(i).length != rows) {
                 byte[] arr = splitted.get(i);
                 String arrString = CodingUtils.arrayToString(arr);
-                String fixedArr = CodingUtils.fillInMissingZeros(arrString, rows);
+                String fixedArr = CodingUtils.fillInMissingZeros(arrString, rows, false);
                 splitted.set(i, CodingUtils.stringToArray(fixedArr));
             }
         }
@@ -234,7 +240,6 @@ public class Main {
         System.out.println("Nesutampantys bitai po dekodavimo: " + errors + ", is viso bitu: " + enteredText.length());
         System.out.println("Klaidu procentas: " + (errors * 100) / enteredText.length() + "%");
     }
-
 
     // uzkoduoja, prasiuncia pro kanal ir dekoduoja ivesta dvejetaini pranesima, pvz "1101"
     private static void initBinaryCodeOption(int rows, int columns, double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {

@@ -11,6 +11,11 @@ public class Encoder {
         this.gMatrix = gMatrix;
     }
 
+    /**
+     * Uzkoduoja pranesima
+     * @param message pranesimas, kuri norima uzkoduoti
+     * @return grazina uzkoduota pranesima
+     */
     public byte[] encode(byte[] message) {
         byte[] encodedMessage = MatrixCalculationUtils.multiplyVectorByMatrixG(message, gMatrix);
 
