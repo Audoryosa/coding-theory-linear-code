@@ -1,10 +1,5 @@
 package com.audriuskumpis;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,10 +17,10 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Iveskite dimensija n: ");
+        System.out.print("Iveskite kodo ilgi n: ");
         columns = scanner.nextInt();
 
-        System.out.print("Iveskite kodo ilgi k: ");
+        System.out.print("Iveskite dimensija k: ");
         rows = scanner.nextInt();
 
         if (rows >= columns) {
@@ -220,7 +215,7 @@ public class Main {
 
         StringBuilder distortedResult = new StringBuilder();
         Arrays.stream(
-                distortedBuilder.toString().split("(?<=\\G.{8})"))
+                distortedBuilder.substring(0, binaryText.length).split("(?<=\\G.{8})"))
                 .forEach(s -> distortedResult.append((char) Integer.parseInt(s, 2)));
 
         System.out.println("Iskraipytas tekstas:");
@@ -228,20 +223,20 @@ public class Main {
 
         StringBuilder result = new StringBuilder();
         Arrays.stream(
-                stringBuilder.toString().split("(?<=\\G.{8})"))
+                stringBuilder.substring(0, binaryText.length).split("(?<=\\G.{8})"))
                 .forEach(s -> result.append((char) Integer.parseInt(s, 2)));
 
-        String output = result.toString();
+        String output = result.substring(0, binaryText.length / 8);
 
         System.out.println("Dekoduotas tekstas: ");
         System.out.println(output);
 
         int errors = CodingUtils.compareTwoTextResults(enteredText, output);
-        System.out.println("Nesutampantys bitai po dekodavimo: " + errors + ", is viso bitu: " + enteredText.length());
+        System.out.println("Nesutampantys baitai po dekodavimo: " + errors + ", is viso baitu: " + enteredText.length());
         System.out.println("Klaidu procentas: " + (errors * 100) / enteredText.length() + "%");
     }
 
-    // uzkoduoja, prasiuncia pro kanal ir dekoduoja ivesta dvejetaini pranesima, pvz "1101"
+    // uzkoduoja, prasiuncia pro kanala ir dekoduoja ivesta dvejetaini pranesima, pvz "1101"
     private static void initBinaryCodeOption(int rows, int columns, double faultProbability, byte[][] gMatrix, byte[][] anotherMatrix) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Iveskite " + rows + " ilgio koda: ");
@@ -263,8 +258,18 @@ public class Main {
         MatrixCalculationUtils.print1dMatrix(encodedMessage);
 
         System.out.println("Iskraipytas pranesimas:");
-        channel.distortMessage(encodedMessage);
+        byte[] distortErrors = channel.distortMessage(encodedMessage);
         MatrixCalculationUtils.print1dMatrix(encodedMessage);
+
+        System.out.print("Klaidu skaicius pranesime: " + CodingUtils.getMatrixWeight(distortErrors) + " \n");
+        System.out.println("Klaidu pozicijos:");
+        StringBuilder errorString = new StringBuilder();
+        for (int i = 0; i < distortErrors.length; i++) {
+            if (distortErrors[i] == 1) {
+                errorString.append("(" + (i+1) + ")");
+            }
+        }
+        System.out.println(errorString);
 
         byte[][] hMatrix = CodingUtils.buildHMatrix(anotherMatrix);
 
